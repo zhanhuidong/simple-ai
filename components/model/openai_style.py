@@ -9,11 +9,16 @@ from _base import (
     BaseLLMModel, 
     BaseMessage, 
     AIMessage,
+    BaseLLMParameter,
+    BaseCompletionParameter,
     DEFAULT_MAX_RETRIES,
     DEFAULT_MAX_NEW_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_MODEL,
-    DEFAULT_COMPLETION_PATH
+    DEFAULT_COMPLETION_PATH,
+    DEFAULT_TOP_P,
+    DEFAULT_TOP_N,
+    DEFAULT_REPETITION_PENALTY
 )
 
 class RequestModel(BaseModel):
@@ -46,30 +51,28 @@ class ModelResponse(BaseModel):
     model:str = Field(default="MIX", description="模型")
     system_fingerprint:str = Field(default="MIX", description="系统指纹")
 
+class OpenAiStyleLLMParameter(BaseLLMParameter):
+    model:str = DEFAULT_MODEL,
+    max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
+    temperature:float = DEFAULT_TEMPERATURE,
+    top_p:float = DEFAULT_TOP_P,
+    top_n:int = DEFAULT_TOP_N, 
+    repetition_penalty:float = DEFAULT_REPETITION_PENALTY
+
 # 一个类似与openai的模型类，但是可以定义自己的校验
 class OpenAiStyleModel(BaseLLMModel):
     def __init__(
-            self, 
-            api_key:str = None,
-            model:str = DEFAULT_MODEL,
-            base_url:str = "https://api.openai.com",
-            full_url:str = None,
-            max_retry:int = 3,
-            max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
-            temperature:float = DEFAULT_TEMPERATURE,
-            top_p:float = 0.95,
-            top_n:int = 50, 
-            repetition_penalty:float = 1.1) -> None:
+            self, parameter:OpenAiStyleLLMParameter) -> None:
         
-        super().__init__(api_key, base_url, max_retry)
-        self.temperature = temperature
-        self.top_p = top_p
-        self.top_n = top_n
-        self.repetition_penalty = repetition_penalty
-        self.max_new_tokens = max_new_tokens
-        self.full_url = full_url
-        self.base_url = base_url
-        self.model = model
+        super().__init__(parameter)
+        self.temperature = parameter.temperature
+        self.top_p = parameter.top_p
+        self.top_n = parameter.top_n
+        self.repetition_penalty = parameter.repetition_penalty
+        self.max_new_tokens = parameter.max_new_tokens
+        self.full_url = parameter.full_url
+        self.base_url = parameter.base_url
+        self.model = parameter.model
     
         self.validate_custom_rules()
 
@@ -80,9 +83,9 @@ class OpenAiStyleModel(BaseLLMModel):
         pass
 
 
-    def completion(self, messages: List[BaseMessage], temperature: float = None, max_new_tokens: int = None, model: str = None, stream: bool = False) -> Iterator[ModelResponse]:
+    def completion(self, parameter:BaseCompletionParameter) -> Iterator[ModelResponse]:
         # 创建请求模型
-        requestModel = self.__build_request_model(messages, temperature, max_new_tokens, model, stream)
+        requestModel = self.__build_request_model(parameter.messages, parameter.temperature, parameter.max_new_tokens, parameter.model, parameter.stream)
 
         # 发送 POST 请求，获取响应
         count = 0
@@ -97,7 +100,7 @@ class OpenAiStyleModel(BaseLLMModel):
                 print(f"请求失败: {e}")
                 count = count+1
 
-        if not stream:
+        if not parameter.stream:
              # 如果不使用流式返回
             data = response.json()  # 获取响应的 JSON 数据
             result = ModelResponse(**data)  # 将响应数据映射到模型

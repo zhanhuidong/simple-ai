@@ -1,12 +1,10 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Iterator,AsyncGenerator, Union
-# from openai import OpenAI, AzureOpenAI
 import httpx
 import requests
 import json
 import os
 from datetime import datetime
-# from _base import BaseModel, DEFAULT_MAX_RETRIES, BaseMessage, AIMessage
 from _base import (
     BaseLLMModel, 
     BaseMessage, 
@@ -15,18 +13,19 @@ from _base import (
     SystemMessage,
     UserMessage,
     ModelResponse,
+    BaseLLMParameter,
+    BaseCompletionParameter,
     DEFAULT_MAX_RETRIES,
     DEFAULT_MAX_NEW_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_MODEL,
-    DEFAULT_COMPLETION_PATH
+    DEFAULT_COMPLETION_PATH,
+    DEFAULT_MAX_NEW_TOKENS,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_P,
+    DEFAULT_TOP_N,
+    DEFAULT_REPETITION_PENALTY
 )
-
-DEFAULT_MAX_NEW_TOKENS = 4096
-DEFAULT_TEMPERATURE = 0.7
-DEFAULT_TOP_P = 0.95
-DEFAULT_TOP_N = 50
-DEFAULT_REPETITION_PENALTY= 1.1
 
 
 DEFAULT_MODEL = "llama3pro"
@@ -58,31 +57,28 @@ class MixRequestModel(BaseModel):
     @classmethod
     def from_messages(cls, model: str, messages: List[BaseMessage], parameter:MixParameter, stream: bool = False):
         messages_dict = [message.model_dump() for message in messages]
-        return cls(external_call_type=model, messages=messages_dict, parameter = parameter)
+        return cls(external_call_type=model, messages=messages_dict, parameter = parameter, stream = stream)
+
+class MixLLMParameter(BaseLLMParameter):
+    model:str = DEFAULT_MODEL,
+    max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
+    temperature:float = DEFAULT_TEMPERATURE,
+    top_p:float = DEFAULT_TOP_P,
+    top_n:int = DEFAULT_TOP_N, 
+    repetition_penalty:float = DEFAULT_REPETITION_PENALTY
 
 
 # 一个类似与openai的模型类，但是可以定义自己的校验
 class MIX(BaseLLMModel):
     parameter:MixParameter
     external_call_type:str = DEFAULT_MODEL
-    def __init__(
-            self, 
-            api_key:str = None,
-            model:str = DEFAULT_MODEL,
-            base_url:str = "https://api.openai.com",
-            full_url:str = None,
-            max_retry:int = DEFAULT_MAX_RETRIES,
-            max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
-            temperature:float = DEFAULT_TEMPERATURE,
-            top_p:float = DEFAULT_TOP_P,
-            top_n:int = DEFAULT_TOP_N, 
-            repetition_penalty:float = DEFAULT_REPETITION_PENALTY) -> None:
+    def __init__(self, parameter:MixLLMParameter) -> None:
         
-        super().__init__(api_key, base_url, max_retry)
-        self.parameter = MixParameter(max_new_tokens=max_new_tokens, temperature=temperature, top_p=top_p, top_n=top_n, repetition_penalty=repetition_penalty)
-        self.full_url = full_url
-        self.base_url = base_url
-        self.external_call_type = model
+        super().__init__(parameter)
+        self.parameter = MixParameter(max_new_tokens=parameter.max_new_tokens, temperature=parameter.temperature, top_p=parameter.top_p, top_n=parameter.top_n, repetition_penalty=parameter.repetition_penalty)
+        self.full_url = parameter.full_url
+        self.base_url = parameter.base_url
+        self.external_call_type = parameter.model
     
         self.validate_custom_rules()
 
@@ -92,9 +88,9 @@ class MIX(BaseLLMModel):
         # 实现自定义校验逻辑
         pass
 
-    def completion(self, messages: List[BaseMessage], temperature: float = None, max_new_tokens: int = None, model: str = None, stream: bool = False) -> ModelResponse: # type: ignore
+    def completion(self, parameter:BaseCompletionParameter) -> ModelResponse: # type: ignore
         # 创建请求模型
-        requestModel = self.__build_request_model(messages, temperature, max_new_tokens, model, stream)
+        requestModel = self.__build_request_model(parameter.messages, parameter.temperature, parameter.max_new_tokens, parameter.model, parameter.stream)
 
         # 发送 POST 请求，获取响应
         count = 0
@@ -109,7 +105,7 @@ class MIX(BaseLLMModel):
                 print(f"请求失败: {e}")
                 count = count+1
 
-        if stream:
+        if parameter.stream:
             raise Exception("stream is not supported in mix")
             
         # 如果不使用流式返回
