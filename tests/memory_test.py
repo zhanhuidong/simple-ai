@@ -69,7 +69,7 @@ class AbsMemory(ABC):
 
 # 所有使用本地内存的记忆
 # {用户：{id:消息}}
-memories:dict[str,dict[str:MessageInfo]] = {}
+memories:dict[str,dict[str,MessageInfo]] = {}
 
 class BaseMemory(AbsMemory):
     '''
