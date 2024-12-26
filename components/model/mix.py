@@ -1,20 +1,13 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional, Iterator,AsyncGenerator, Union
+from pydantic import BaseModel
 import httpx
 import requests
-import json
-import os
+from typing import List
 from datetime import datetime
-from _base import (
-    BaseLLMModel, 
-    BaseMessage, 
-    AIMessage,
-    CompletionsChoice,
-    SystemMessage,
-    UserMessage,
-    ModelResponse,
-    BaseLLMParameter,
-    BaseCompletionParameter,
+from .base import (
+    BaseLLMModel
+)
+
+from .constants import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MAX_NEW_TOKENS,
     DEFAULT_TEMPERATURE,
@@ -25,6 +18,19 @@ from _base import (
     DEFAULT_TOP_P,
     DEFAULT_TOP_N,
     DEFAULT_REPETITION_PENALTY
+)
+
+from .dto import (
+    BaseLLMModel, 
+    BaseMessage, 
+    AIMessage,
+    CompletionsChoice,
+    SystemMessage,
+    UserMessage,
+    ModelResponse,
+    BaseLLMParameter,
+    BaseCompletionParameter,
+    ModelResponse
 )
 
 

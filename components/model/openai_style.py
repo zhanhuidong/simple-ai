@@ -1,24 +1,35 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Iterator,AsyncGenerator, Union
-# from openai import OpenAI, AzureOpenAI
 import httpx
 import requests
 import json
-import os
-from _base import (
-    BaseLLMModel, 
-    BaseMessage, 
-    AIMessage,
-    BaseLLMParameter,
-    BaseCompletionParameter,
+from .base import (
+    BaseLLMModel
+)
+
+from .constants import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MAX_NEW_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_MODEL,
     DEFAULT_COMPLETION_PATH,
+    DEFAULT_MAX_NEW_TOKENS,
+    DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
     DEFAULT_TOP_N,
     DEFAULT_REPETITION_PENALTY
+)
+
+from .dto import (
+    BaseLLMModel, 
+    BaseMessage, 
+    AIMessage,
+    CompletionsChoice,
+    SystemMessage,
+    UserMessage,
+    BaseLLMParameter,
+    BaseCompletionParameter,
+    ModelResponse
 )
 
 class RequestModel(BaseModel):
@@ -34,22 +45,6 @@ class RequestModel(BaseModel):
         messages_dict = [message.model_dump() for message in messages]
         return cls(model=model, messages=messages_dict, max_new_tokens=max_new_tokens, temperature=temperature, stop=stop, stream=stream)
 
-
-class CompletionsChoice(BaseModel):
-    message:Optional[AIMessage] = Field(default=None, description="非流式响应时候的消息")
-    delta:Optional[AIMessage] = Field(default=None, description="流式响应时候的消息")
-    index:int = Field(default=0, description="索引")
-    logprobs:Optional[float] = Field(default=None, description="对数概率")
-    finish_reason:Optional[str] = Field(default=None, description="结束原因")
-
-class ModelResponse(BaseModel):
-    id:str = Field(default=None, description="id")
-    object:str = Field(default="chat.completions", description="object:chat.completions|chat.completions.chunk")
-    created:int = Field(default=None, description="创建时间")
-    choices:list[CompletionsChoice] = Field(default=[], description="消息列表")
-    usage:Optional[dict] = Field(default=None, description="usage")
-    model:str = Field(default="MIX", description="模型")
-    system_fingerprint:str = Field(default="MIX", description="系统指纹")
 
 class OpenAiStyleLLMParameter(BaseLLMParameter):
     model:str = DEFAULT_MODEL,

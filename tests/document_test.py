@@ -92,7 +92,7 @@ class DocumentResolver(AbsResolver):
         return page_contents
 
 if "__main__" == __name__:
-    result:list[PageContent] = DocumentResolver(file_path="/Users/zhanhd/Downloads").resolve()
+    result:list[PageContent] = DocumentResolver(file_path="/Users/zhanhd/Downloads/附件3.1《产品说明书》（普通版）20240415_1-1_1-1.pdf").resolve()
 
     for page in result:
         print(page.model_dump())
