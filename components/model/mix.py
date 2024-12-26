@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import httpx
 import requests
 from typing import List
 from datetime import datetime
 from .base import (
-    BaseLLMModel
+    AbsLLMModel
 )
 
 from .constants import (
@@ -21,7 +21,6 @@ from .constants import (
 )
 
 from .dto import (
-    BaseLLMModel, 
     BaseMessage, 
     AIMessage,
     CompletionsChoice,
@@ -66,22 +65,23 @@ class MixRequestModel(BaseModel):
         return cls(external_call_type=model, messages=messages_dict, parameter = parameter, stream = stream)
 
 class MixLLMParameter(BaseLLMParameter):
-    model:str = DEFAULT_MODEL,
-    max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
-    temperature:float = DEFAULT_TEMPERATURE,
-    top_p:float = DEFAULT_TOP_P,
-    top_n:int = DEFAULT_TOP_N, 
-    repetition_penalty:float = DEFAULT_REPETITION_PENALTY
+    model:str = Field(default=DEFAULT_MODEL),
+    max_new_tokens:int = Field(default=DEFAULT_MAX_NEW_TOKENS, description="最大token")
+    temperature:float = Field(default=DEFAULT_TEMPERATURE),
+    top_p:float = Field(default=DEFAULT_TOP_P),
+    top_n:int = Field(default=DEFAULT_TOP_N), 
+    repetition_penalty:float = Field(default=DEFAULT_REPETITION_PENALTY)
 
 
 # 一个类似与openai的模型类，但是可以定义自己的校验
-class MIX(BaseLLMModel):
+class Mix(AbsLLMModel):
     parameter:MixParameter
     external_call_type:str = DEFAULT_MODEL
     def __init__(self, parameter:MixLLMParameter) -> None:
-        
+
+        # parameter = MixLLMParameter(**parameter.model_dump())
         super().__init__(parameter)
-        self.parameter = MixParameter(max_new_tokens=parameter.max_new_tokens, temperature=parameter.temperature, top_p=parameter.top_p, top_n=parameter.top_n, repetition_penalty=parameter.repetition_penalty)
+        self.parameter = MixParameter(**parameter.model_dump())
         self.full_url = parameter.full_url
         self.base_url = parameter.base_url
         self.external_call_type = parameter.model
@@ -156,7 +156,7 @@ class MIX(BaseLLMModel):
         return requestModel
 
 
-client = MIX(base_url="192.168.6.16:8070", api_key="1234", full_url="http://192.168.6.16:8070/generate/")
-# 非流式
-result = client.completion(messages=[SystemMessage(content="你是一个小助手，你的名字是小马。"),UserMessage(content="介绍一下你自己")], stream=False)
-print(result.model_dump())
+# client = MIX(base_url="192.168.6.16:8070", api_key="1234", full_url="http://192.168.6.16:8070/generate/")
+# # 非流式
+# result = client.completion(messages=[SystemMessage(content="你是一个小助手，你的名字是小马。"),UserMessage(content="介绍一下你自己")], stream=False)
+# print(result.model_dump())

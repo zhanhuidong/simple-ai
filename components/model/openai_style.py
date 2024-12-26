@@ -4,7 +4,7 @@ import httpx
 import requests
 import json
 from .base import (
-    BaseLLMModel
+    AbsLLMModel
 )
 
 from .constants import (
@@ -21,7 +21,6 @@ from .constants import (
 )
 
 from .dto import (
-    BaseLLMModel, 
     BaseMessage, 
     AIMessage,
     CompletionsChoice,
@@ -55,7 +54,7 @@ class OpenAiStyleLLMParameter(BaseLLMParameter):
     repetition_penalty:float = DEFAULT_REPETITION_PENALTY
 
 # 一个类似与openai的模型类，但是可以定义自己的校验
-class OpenAiStyleModel(BaseLLMModel):
+class OpenAiStyleModel(AbsLLMModel):
     def __init__(
             self, parameter:OpenAiStyleLLMParameter) -> None:
         
@@ -113,7 +112,7 @@ class OpenAiStyleModel(BaseLLMModel):
                 yield result.choices[0].delta.content
 
 
-    async def async_completion(self, messages: list[BaseMessage], temperature: float = None, max_new_tokens: int = None, model: str = None, stream: bool = False) -> AsyncGenerator[ModelResponse]: 
+    async def async_completion(self, messages: list[BaseMessage], temperature: float = None, max_new_tokens: int = None, model: str = None, stream: bool = False) -> AsyncGenerator[ModelResponse, None]: 
         # 创建请求模型
         requestModel = self.__build_request_model(messages, temperature, max_new_tokens, model, stream)
 

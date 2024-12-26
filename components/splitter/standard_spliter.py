@@ -1,4 +1,4 @@
-from _base import (
+from ._base import (
     AbsSpliter, BaseSplitParameter
 )
 from langchain_text_splitters import CharacterTextSplitter

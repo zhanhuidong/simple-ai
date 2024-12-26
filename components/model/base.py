@@ -8,14 +8,18 @@ from .constants import (
     DEFAULT_COMPLETION_PATH
 )
 
+from abc import ABC, abstractmethod
 
-class BaseLLMModel:
+
+class AbsLLMModel(ABC):
     api_key:str = None
     base_url:str = None
     full_url:str = None
     max_retry:int = 3
 
     def __init__(self, parameter:BaseLLMParameter) -> None:
+        # if isinstance(parameter, dict):
+        #     parameter = BaseLLMParameter(**parameter)
         api_key = parameter.api_key
         if api_key is None:
             api_key = os.getenv("OPENAI_API_KEY")
@@ -30,7 +34,7 @@ class BaseLLMModel:
             return self.full_url
         return self.base_url + DEFAULT_COMPLETION_PATH
     
-
+    @abstractmethod
     def completion(self, **args):
         raise Exception("Not implemented completion method")
 
