@@ -38,20 +38,20 @@ class BasePrompt(AbsPrompt):
         return self
     
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.generate_prompt(args)
+        return self.generate_prompt(args[0])
     
 class SystemPrompt(BasePrompt):
 
-    def __init__(self, prompt_str: str) -> None:
-        super().__init__("system",prompt_str)
+    def __init__(self, system_prompt: str) -> None:
+        super().__init__("system",system_prompt)
 
     def generate_prompt(self, params: dict) -> BasePrompt:
         return super().generate_prompt(params)
     
 class HumanPrompt(BasePrompt):
 
-    def __init__(self, query: str) -> None:
-        super().__init__("user",query)
+    def __init__(self, human_message: str) -> None:
+        super().__init__("user",human_message)
 
     def generate_prompt(self, params: dict) -> BasePrompt:
         return super().generate_prompt(params)

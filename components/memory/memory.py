@@ -5,7 +5,7 @@ from utils import (
 )
 
 
-from ._base import AbsMemory
+from .base import AbsMemory
 from .dto import (
     MessageInfo,
     MessageListParameter
@@ -15,7 +15,7 @@ from .dto import (
 # {用户：{id:消息}}
 memories:dict[str,dict[str,MessageInfo]] = {}
 
-class BaseMemory(AbsMemory):
+class LocalMemory(AbsMemory):
     '''
         基础记忆
         使用本地内存实现

@@ -4,7 +4,7 @@ from utils import (
     datetime_util
 )
 
-from ._base import AbsMemory
+from .base import AbsMemory
 from .dto import (
     MessageInfo,
     MessageListParameter

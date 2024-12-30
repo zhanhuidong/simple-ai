@@ -10,16 +10,10 @@ test01:
               base_url: http://127.0.0.1:1234
               full_url: http://127.0.0.1:1234/v1/chat/completions
               max_retry: 2
-              # model: qwen2.5-coder-7b-instruct
-              # max_new_tokens: 4096
-              # temperature: 0.9
-              # top_p: 0.95
-              # top_n: 50
-              # repetition_penalty: 1.1
       - name: HumanPrompt
         param:
-          query:
+          human_message: "{{query}}"
       - name: SystemPrompt
         param:
-          prompt_str: 你是一个小助手，可以根据要求，执行任何任务。
+          system_prompt: 你是一个小助手，可以根据要求，执行任何任务。
               
