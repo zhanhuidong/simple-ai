@@ -43,5 +43,5 @@ class BaseCompletionParameter(BaseLLMParameter):
     messages: List[BaseMessage]
     temperature: float = None 
     max_new_tokens: int = None
-    model: str = None
+    model: str = Field(default="llama3pro")
     stream: bool = False

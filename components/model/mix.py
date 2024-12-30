@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 import httpx
 import requests
-from typing import List
+from typing import Any, List
 from datetime import datetime
 from .base import (
     AbsLLMModel
@@ -155,6 +155,9 @@ class Mix(AbsLLMModel):
 
         return requestModel
 
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        param = args[0]
+        return self.completion(BaseCompletionParameter(**param))
 
 # client = MIX(base_url="192.168.6.16:8070", api_key="1234", full_url="http://192.168.6.16:8070/generate/")
 # # 非流式

@@ -3,6 +3,7 @@ from typing import List, Optional, Iterator,AsyncGenerator, Union
 import httpx
 import requests
 import json
+from typing import Any
 from .base import (
     AbsLLMModel
 )
@@ -46,12 +47,12 @@ class RequestModel(BaseModel):
 
 
 class OpenAiStyleLLMParameter(BaseLLMParameter):
-    model:str = DEFAULT_MODEL,
-    max_new_tokens:int = DEFAULT_MAX_NEW_TOKENS,
-    temperature:float = DEFAULT_TEMPERATURE,
-    top_p:float = DEFAULT_TOP_P,
-    top_n:int = DEFAULT_TOP_N, 
-    repetition_penalty:float = DEFAULT_REPETITION_PENALTY
+    model:str = Field(default=DEFAULT_MODEL)
+    max_new_tokens:int = Field(default=DEFAULT_MAX_NEW_TOKENS)
+    temperature:float = Field(default=DEFAULT_TEMPERATURE)
+    top_p:float = Field(default=DEFAULT_TOP_P)
+    top_n:int = Field(default=DEFAULT_TOP_N)
+    repetition_penalty:float = Field(default=DEFAULT_REPETITION_PENALTY)
 
 # 一个类似与openai的模型类，但是可以定义自己的校验
 class OpenAiStyleModel(AbsLLMModel):
@@ -146,3 +147,7 @@ class OpenAiStyleModel(AbsLLMModel):
             temperature=temperature if temperature else self.temperature,
             stream=stream
         )
+    
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        param = args[0]
+        return self.completion(BaseCompletionParameter(**param))

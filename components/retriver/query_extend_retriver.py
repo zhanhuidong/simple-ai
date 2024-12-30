@@ -1,9 +1,13 @@
 from .dto import (
     RetriverParameter,
     RetriverResult,
-    EmbedResults
+    EmbedResults,
+    DocumentEmbedResult
 )
-from .base import AbsRetriver
+from .base import AbsRetriver, BaseRetriver
+import logging as logger
+import traceback
+import json
 
 class QueryExtendRetriver(AbsRetriver):
     '''
@@ -19,10 +23,10 @@ class QueryExtendRetriver(AbsRetriver):
 
         # 将每个问题的查询，提交给线程池
         futures = []
-        baseRevalant = BaseRevalantSearch()
+        baseRevalant = BaseRetriver()
         for question in questions:
             newReq = DocumentSearchV2Req(query=question, documentKeys=req.documentKeys, score=req.score)
-            futures.append(searchExcutor.submit(baseRevalant.doc_search, newReq))
+            futures.append(searchExcutor.submit(baseRevalant._doc_search, newReq))
 
         # 获取所有的搜索结果
         seahrcResults:list[RetriverResult] = [future.result() for future in futures]
@@ -75,6 +79,6 @@ class QueryExtendRetriver(AbsRetriver):
             logger.error(f"问题衍生出错：{traceback.format_exc()}")
             questions = []
         
-        questions.append(req.query)
+        questions.append(query)
 
         return questions

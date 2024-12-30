@@ -22,15 +22,15 @@ def load_classes_from_components():
                 module_path = os.path.relpath(root, components_path).replace(os.sep, '.')
                 full_module_name = f"components.{module_path}.{module_name}" if module_path else f"components.{module_name}"
                 
-                print(f"Importing module: {full_module_name}")  # 调试信息
+                # print(f"Importing module: {full_module_name}")  # 调试信息
                 module = importlib.import_module(full_module_name)
 
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
                     if isinstance(attr, type):
-                        print(f"Found class: {attr_name}")  # 调试信息
+                        # print(f"Found class: {attr_name}")  # 调试信息
                         if attr_name != "ABC" and not attr_name.startswith('Abs') and attr_name not in exclude_name:
-                            classes_dict[attr_name] = f"{full_module_name}.{attr_name}"
+                            classes_dict[attr_name.lower()] = f"{full_module_name}.{attr_name}"
                             # 加载类尝试一下
                             # importlib.import_module(classes_dict[attr_name])
 
@@ -64,19 +64,26 @@ param:
         max_retry: 2
 """
 
-config = yaml.safe_load(data)
-config_name = config['name']
-config_param = config['param']
+# config = yaml.safe_load(data)
+# config_name = config['name']
+# config_param = config['param']
 
-# 通过指定的类名字符串，获取类对象
-class_path = classes_dict[config_name]
-module_name, class_name = class_path.rsplit('.', 1)
-module = importlib.import_module(module_name)
-class_ = getattr(module, class_name)
-# 获取类的 __init__ 方法的参数
-init_signature = inspect.signature(class_.__init__)
-init_params = init_signature.parameters
-print(init_params)  # 打印 __init__ 方法的参数
-params = {name: VariableModel(**config_param[name]) for name, param in init_params.items() if name != 'self'}
-instance = class_(**params)
-print(instance.__dict__)
+# # 通过指定的类名字符串，获取类对象
+# class_path = classes_dict[config_name]
+# module_name, class_name = class_path.rsplit('.', 1)
+# module = importlib.import_module(module_name)
+# class_ = getattr(module, class_name)
+# # 获取类的 __init__ 方法的参数
+# init_signature = inspect.signature(class_.__init__)
+# init_params = init_signature.parameters
+# print(init_params)  # 打印 __init__ 方法的参数
+# params = {name: VariableModel(**config_param[name]) for name, param in init_params.items() if name != 'self'}
+# instance = class_(**params)
+# print(instance.__dict__)
+
+
+
+# 加载app配置文件
+def load_app_config():
+    with open("app_config.yml", 'r', encoding='utf-8') as file:
+        return yaml.safe_load(file)
